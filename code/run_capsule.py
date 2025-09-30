@@ -1,5 +1,5 @@
 """
-Capsule to package benchmark 
+Capsule to package benchmark
 indicator data
 """
 
@@ -7,6 +7,7 @@ import json
 import logging
 from pathlib import Path
 
+import pynwb
 from aind_nwb_utils.utils import get_subject_nwb_object
 from dateutil import parser
 from hdmf_zarr import NWBZarrIO
@@ -14,7 +15,6 @@ from ndx_events import NdxEventsNWBFile
 from pydantic import Field
 from pydantic_settings import BaseSettings
 
-import pynwb
 import utils
 
 logger = logging.getLogger(__name__)
@@ -32,11 +32,12 @@ class OptoInputSettings(BaseSettings, cli_parse_args=True):
         default=Path("/results/"), description="Output directory"
     )
 
+
 if __name__ == "__main__":
     logging.basicConfig(
         level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
     )
-    
+
     settings = OptoInputSettings()
     primary_data_path = tuple(settings.input_directory.glob("behavior*"))
 
@@ -78,7 +79,7 @@ if __name__ == "__main__":
     # using this ndx object for events table
     nwb_file = NdxEventsNWBFile(
         session_id=data_description_json["name"],
-        session_description=f"Opto + Fiber Indicator Benchmarking",
+        session_description="Opto + Fiber Indicator Benchmarking",
         session_start_time=parser.parse(session_json["session_start_time"]),
         identifier=data_description_json["subject_id"],
         subject=get_subject_nwb_object(data_description_json, subject_json),
@@ -87,18 +88,22 @@ if __name__ == "__main__":
     data = utils.get_channel_data(settings.input_directory / "test_opto_data")
     logger.info(f"Found data to package {tuple(data.keys())}. Adding to NWB")
     for key, values in data.items():
-        description=f"{key} timeseries data"
+        description = f"{key} timeseries data"
         ts = pynwb.TimeSeries(
             name=key,
             data=values[1],
             unit="s",
             timestamps=values[0],
-            description=description
+            description=description,
         )
         nwb_file.add_acquisition(ts)
-    
-    logger.info(f"Finished packaging. Saving to path {settings.output_directory}")
-    nwb_output_path = settings.output_directory / f"{data_description_json["name"]}.nwb.zarr"
+
+    logger.info(
+        f"Finished packaging. Saving to path {settings.output_directory}"
+    )
+    nwb_output_path = (
+        settings.output_directory / f"{data_description_json["name"]}.nwb.zarr"
+    )
     with NWBZarrIO(nwb_output_path.as_posix(), "w") as io:
         io.write(nwb_file)
     logger.info("Finished saving nwb with acquisition data")
