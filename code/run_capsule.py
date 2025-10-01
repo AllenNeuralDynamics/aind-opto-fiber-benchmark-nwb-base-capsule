@@ -11,7 +11,11 @@ import pynwb
 from aind_nwb_utils.utils import get_subject_nwb_object
 from dateutil import parser
 from hdmf_zarr import NWBZarrIO
-from ndx_events import NdxEventsNWBFile
+from ndx_events import (
+    EventsTable, 
+    MeaningsTable, 
+    NdxEventsNWBFile
+)
 from pydantic import Field
 from pydantic_settings import BaseSettings
 
@@ -52,7 +56,7 @@ if __name__ == "__main__":
     primary_data_path = primary_data_path[0]
     logger.info(f"Found primary data at path {primary_data_path}")
 
-    session_json_path = primary_data_path / "session.json"
+    session_json_path = settings.input_directory / "fib" / "session.json"
     data_description_json_path = primary_data_path / "data_description.json"
     subject_json_path = primary_data_path / "subject.json"
     if not session_json_path.exists():
@@ -85,7 +89,7 @@ if __name__ == "__main__":
         subject=get_subject_nwb_object(data_description_json, subject_json),
     )
 
-    data = utils.get_channel_data(settings.input_directory / "test_opto_data")
+    data = utils.get_channel_data(settings.input_directory / "fib")
     logger.info(f"Found data to package {tuple(data.keys())}. Adding to NWB")
     for key, values in data.items():
         description = f"{key} timeseries data"
@@ -98,6 +102,33 @@ if __name__ == "__main__":
         )
         nwb_file.add_acquisition(ts)
 
+    logger.info("Finished packaging timeseries")
+    logger.info(
+        "Gathering events and meanings table now"
+    )
+
+    events_df, meanings_df = utils.create_event_and_meanings_dataframes(
+        settings.input_directory / "fib", session_json
+    )
+
+    event_table = EventsTable.from_dataframe(
+        events_df,
+        name="events",
+        table_description="Events for Benchmark Indicator experiment",
+    )
+    meanings_table = MeaningsTable.from_dataframe(
+        meanings_df,
+        name="meanings",
+        # probably better way, but violates flake8 if not like this
+        table_description=(
+            "Description of values in events table for "
+            "Benchmark Indicator experiment",
+        )[0],
+    )
+    event_table.add_meanings_tables(meanings_table)
+    nwb_file.add_events_table(event_table)
+    logger.info("Finished gathering events and meanings tables")
+
     logger.info(
         f"Finished packaging. Saving to path {settings.output_directory}"
     )
@@ -106,4 +137,4 @@ if __name__ == "__main__":
     )
     with NWBZarrIO(nwb_output_path.as_posix(), "w") as io:
         io.write(nwb_file)
-    logger.info("Finished saving nwb with acquisition data")
+    logger.info("Finished saving nwb with timseries and event data")
