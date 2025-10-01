@@ -94,11 +94,15 @@ def create_event_and_meanings_dataframes(data_directory: Path, session_metadata:
         event_table_dict["timestamp"].append(stim_df["SoftwareTS"].iloc[start_frame_onset])
         event_table_dict["event"].append("OptoStimLaser_onset")
     
+    final_frame_offset = int(start_frame_onset + (pulse_frequency * pulse_duration))
+    event_table_dict["timestamp"].append(stim_df["SoftwareTS"].iloc[final_frame_offset])
+    event_table_dict["event"].append("OptoStimLaser_offset")
+    
     event_table_df = pd.DataFrame(event_table_dict)
     for event in event_table_df["event"].unique():
         meanings_table_dict["value"].append(event)
         meanings_table_dict["meaning"].append(MEANINGS[event])
-        meanings_table_dict["HED_tag"].append(MEANINGS[event])
+        meanings_table_dict["HED_tag"].append(HED_TAGS[event])
     meanings_table_df = pd.DataFrame(meanings_table_dict)
 
     return event_table_df, meanings_table_df
