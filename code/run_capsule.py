@@ -43,7 +43,7 @@ if __name__ == "__main__":
     )
 
     settings = OptoInputSettings()
-    primary_data_path = tuple(settings.input_directory.glob("behavior*"))
+    primary_data_path = tuple(settings.input_directory.glob("raw_data"))
 
     if not primary_data_path:
         raise FileNotFoundError("No primary data asset attached")

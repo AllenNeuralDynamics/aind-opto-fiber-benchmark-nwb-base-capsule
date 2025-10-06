@@ -3,7 +3,7 @@
 	"attached_datasets": [
 		{
 			"id": "c017744c-4f73-4227-9f93-08f74346efd7",
-			"mount": "behavior_789919_2025-09-17_19-30-21"
+			"mount": "raw_data"
 		}
 	]
 }
