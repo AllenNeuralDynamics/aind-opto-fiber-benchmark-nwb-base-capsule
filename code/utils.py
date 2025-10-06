@@ -44,7 +44,11 @@ def get_channel_data(
         for column in data_columns:
             column_data = df_data[column].to_numpy()
             assert len(timestamps) == len(column_data)
-            data[f"{channel}_{column}"] = (timestamps, column_data)
+            if "sensorfloor" in column:
+                name = f"{channel}_{column.replace("_sensorfloor", "")[-1]}"
+            else:
+                name = f"{channel}_{column[-1]}"
+            data[name] = (timestamps, column_data)
 
     return data
 

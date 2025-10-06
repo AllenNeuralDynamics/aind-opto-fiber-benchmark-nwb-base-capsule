@@ -133,7 +133,7 @@ if __name__ == "__main__":
         f"Finished packaging. Saving to path {settings.output_directory}"
     )
     nwb_output_path = (
-        settings.output_directory / f"{data_description_json["name"]}.nwb.zarr"
+        settings.output_directory / f"{data_description_json["name"]}.nwb"
     )
     with NWBZarrIO(nwb_output_path.as_posix(), "w") as io:
         io.write(nwb_file)
