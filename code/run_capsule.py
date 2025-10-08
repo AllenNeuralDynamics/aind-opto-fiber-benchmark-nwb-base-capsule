@@ -56,7 +56,7 @@ if __name__ == "__main__":
     primary_data_path = primary_data_path[0]
     logger.info(f"Found primary data at path {primary_data_path}")
 
-    session_json_path = settings.input_directory / "fib" / "session.json"
+    session_json_path = primary_data_path / "session.json"
     data_description_json_path = primary_data_path / "data_description.json"
     subject_json_path = primary_data_path / "subject.json"
     if not session_json_path.exists():
@@ -89,7 +89,7 @@ if __name__ == "__main__":
         subject=get_subject_nwb_object(data_description_json, subject_json),
     )
 
-    data = utils.get_channel_data(settings.input_directory / "fib")
+    data = utils.get_channel_data(primary_data_path / "fib")
     logger.info(f"Found data to package {tuple(data.keys())}. Adding to NWB")
     for key, values in data.items():
         description = f"{key} timeseries data"
