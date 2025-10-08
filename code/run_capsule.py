@@ -119,7 +119,7 @@ if __name__ == "__main__":
     meanings_table = MeaningsTable.from_dataframe(
         meanings_df,
         name="meanings",
-        # probably better way, but violates flake8 if not like this
+ 
         table_description=(
             "Description of values in events table for "
             "Benchmark Indicator experiment",
