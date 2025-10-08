@@ -11,11 +11,7 @@ import pynwb
 from aind_nwb_utils.utils import get_subject_nwb_object
 from dateutil import parser
 from hdmf_zarr import NWBZarrIO
-from ndx_events import (
-    EventsTable, 
-    MeaningsTable, 
-    NdxEventsNWBFile
-)
+from ndx_events import EventsTable, MeaningsTable, NdxEventsNWBFile
 from pydantic import Field
 from pydantic_settings import BaseSettings
 
@@ -103,9 +99,7 @@ if __name__ == "__main__":
         nwb_file.add_acquisition(ts)
 
     logger.info("Finished packaging timeseries")
-    logger.info(
-        "Gathering events and meanings table now"
-    )
+    logger.info("Gathering events and meanings table now")
 
     events_df, meanings_df = utils.create_event_and_meanings_dataframes(
         settings.input_directory / "fib", session_json
@@ -119,7 +113,6 @@ if __name__ == "__main__":
     meanings_table = MeaningsTable.from_dataframe(
         meanings_df,
         name="meanings",
- 
         table_description=(
             "Description of values in events table for "
             "Benchmark Indicator experiment",
