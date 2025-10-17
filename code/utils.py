@@ -1,7 +1,11 @@
+import logging
 from pathlib import Path
 
 import numpy as np
 import pandas as pd
+
+logger = logging.getLogger(__name__)
+
 
 CHANNEL_MAPPING = ["Signal", "Iso", "Stim"]
 MEANINGS = {
@@ -83,41 +87,50 @@ def create_event_and_meanings_dataframes(
     stim_metadata = session_metadata["stimulus_epochs"][0][
         "stimulus_parameters"
     ][0]
-    pulse_frequency = float(stim_metadata["pulse_frequency"][0])
+    pulse_frequencies = stim_metadata["pulse_frequency"]
     baseline_duration = float(stim_metadata["baseline_duration"])
     number_pulse_trains = float(stim_metadata["number_pulse_trains"][0])
-    pulse_duration = float(stim_metadata["pulse_train_duration"][0])
+    pulse_durations = stim_metadata["pulse_train_duration"]
     pulse_interval = float(stim_metadata["pulse_train_interval"])
 
     event_table_dict = {"timestamp": [], "event": []}
     meanings_table_dict = {"value": [], "meaning": [], "HED_tag": []}
 
     # get starting slice into dataframe
-    start_frame_onset = int(pulse_frequency * baseline_duration)
+    start_frame_onset = int(float(pulse_frequencies[0]) * baseline_duration)
     event_table_dict["timestamp"].append(
         stim_df["SoftwareTS"].iloc[start_frame_onset]
     )
     event_table_dict["event"].append("OptoStimLaser_onset")
 
     for num_train in range(int(number_pulse_trains - 1)):
-        frame_offset = int(
-            start_frame_onset + (pulse_frequency * pulse_duration)
-        )
-        event_table_dict["timestamp"].append(
-            stim_df["SoftwareTS"].iloc[frame_offset]
-        )
-        event_table_dict["event"].append("OptoStimLaser_offset")
+        for pulse_frequency in pulse_frequencies:
+            for pulse_duration in pulse_durations:
+                logger.info(
+                    f"Processing frequency {pulse_frequency} "
+                    f"and duration {pulse_duration} "
+                    f"for trial number {num_train + 1}"
+                )
+                frame_offset = int(
+                    start_frame_onset
+                    + (float(pulse_frequency) * float(pulse_duration))
+                )
+                event_table_dict["timestamp"].append(
+                    stim_df["SoftwareTS"].iloc[frame_offset]
+                )
+                event_table_dict["event"].append("OptoStimLaser_offset")
 
-        start_frame_onset = int(
-            frame_offset + (pulse_frequency * pulse_interval)
-        )
-        event_table_dict["timestamp"].append(
-            stim_df["SoftwareTS"].iloc[start_frame_onset]
-        )
-        event_table_dict["event"].append("OptoStimLaser_onset")
+                start_frame_onset = int(
+                    frame_offset + (float(pulse_frequency) * pulse_interval)
+                )
+                event_table_dict["timestamp"].append(
+                    stim_df["SoftwareTS"].iloc[start_frame_onset]
+                )
+                event_table_dict["event"].append("OptoStimLaser_onset")
 
     final_frame_offset = int(
-        start_frame_onset + (pulse_frequency * pulse_duration)
+        start_frame_onset
+        + (float(pulse_frequencies[-1]) * float(pulse_duration[-1]))
     )
     event_table_dict["timestamp"].append(
         stim_df["SoftwareTS"].iloc[final_frame_offset]
