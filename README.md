@@ -1,4 +1,4 @@
-# aind-benchmark-indicator-nwb-base-capsule
+# aind-opto-fiber-benchmark-nwb-base-capsule
 
 This capsule takes in the raw data for the optogenetics fiber benchmark indicator experiment, structured here [acquisition-repo](https://github.com/AllenNeuralDynamics/FIP_DAQ_Control_IndicatorBenchmarking/blob/main/README.md) in the file formats section, and packages to a NWB file. 
 
