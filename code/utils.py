@@ -57,7 +57,10 @@ def get_channel_data(
 
     return data
 
-def _get_frame_index(frame_start: int, frequency: float, time_factor: float) -> int:
+
+def _get_frame_index(
+    frame_start: int, frequency: float, time_factor: float
+) -> int:
     """
     Gets the corresponding frame index given a frame start,
     frequency, and time factor (duration or interval)
@@ -67,12 +70,12 @@ def _get_frame_index(frame_start: int, frequency: float, time_factor: float) -> 
     frame_start: int
         The starting frame
     frequency: float
-        The frequency to be applied to the frame index 
+        The frequency to be applied to the frame index
         calculation
     time_factor: float
-        The duration or interval to be applied to the 
+        The duration or interval to be applied to the
         frame index calculation
-    
+
     Returns
     -------
     int
@@ -80,6 +83,7 @@ def _get_frame_index(frame_start: int, frequency: float, time_factor: float) -> 
     """
 
     return int(frame_start + (float(frequency) * time_factor))
+
 
 def create_event_and_meanings_dataframes(
     data_directory: Path, session_metadata: dict
@@ -121,9 +125,7 @@ def create_event_and_meanings_dataframes(
 
     # get starting slice into dataframe
     start_frame_onset = _get_frame_index(
-        0,
-        float(pulse_frequencies[0]),
-        float(baseline_duration)
+        0, float(pulse_frequencies[0]), float(baseline_duration)
     )
     event_table_dict["timestamp"].append(
         stim_df["SoftwareTS"].iloc[start_frame_onset]
@@ -141,7 +143,7 @@ def create_event_and_meanings_dataframes(
                 frame_offset = _get_frame_index(
                     start_frame_onset,
                     float(pulse_frequency),
-                    float(pulse_duration)
+                    float(pulse_duration),
                 )
                 event_table_dict["timestamp"].append(
                     stim_df["SoftwareTS"].iloc[frame_offset]
@@ -149,9 +151,7 @@ def create_event_and_meanings_dataframes(
                 event_table_dict["event"].append("OptoStimLaser_offset")
 
                 start_frame_onset = _get_frame_index(
-                    frame_offset,
-                    float(pulse_frequency),
-                    float(pulse_interval)
+                    frame_offset, float(pulse_frequency), float(pulse_interval)
                 )
                 event_table_dict["timestamp"].append(
                     stim_df["SoftwareTS"].iloc[start_frame_onset]
@@ -161,7 +161,7 @@ def create_event_and_meanings_dataframes(
     final_frame_offset = _get_frame_index(
         start_frame_onset,
         float(pulse_frequencies[-1]),
-        float(pulse_duration[-1])
+        float(pulse_duration[-1]),
     )
     event_table_dict["timestamp"].append(
         stim_df["SoftwareTS"].iloc[final_frame_offset]
