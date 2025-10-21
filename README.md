@@ -40,7 +40,7 @@ In addition, at the top level, there will be a `session.json` file containing in
 ]
 ```
 
-Example raw data structure is shown below. This capsule uses the `session.json` as described above, and looks into the `fib` directory for the `Signal`, `Iso`, and `Stim` csv files that will be packaged into the NWB.
+Example raw data structure is shown below. This capsule uses the `session.json` as described above, and looks into the `fib` directory for the `Signal`, `Iso`, and `Stim` csv files that will be packaged into the NWB. See acquisition repo for more details.
 
 ```
 📂 behavior_subjectID_YYYY-MM-DD_HH-M-S
