@@ -57,7 +57,8 @@ Example raw data structure is shown below. This capsule uses the `session.json` 
 ```
 
 ### NWB Structure
-The NWB output of this capsule contains 2 relevant containers, the `acquisition` and `events`. The acquisition contains the raw timeseries data for each of the `Signal`, `Iso`, and `Stim` data for each of the fiber connection indices. Index 4 corresponds to the sensor floor. The strucutre is shown below
+The NWB output of this capsule contains 2 relevant containers, the `acquisition` and `events`. The acquisition contains the raw timeseries data for each of the `Signal`, `Iso`, and `Stim` data for each of the fiber connection indices (0-3) that are connected to the brain in the fiber implant hole index. 
+Index 4 corresponds to the sensor floor. The strucutre is shown below
 
 ```
 acquisition
