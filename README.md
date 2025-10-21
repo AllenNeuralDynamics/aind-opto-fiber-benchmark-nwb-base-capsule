@@ -40,6 +40,22 @@ In addition, at the top level, there will be a `session.json` file containing in
 ]
 ```
 
+Example raw data structure is shown below. This capsule uses the `session.json` as described above, and looks into the `fib` directory for the `Signal`, `Iso`, and `Stim` csv files that will be packaged into the NWB.
+
+```
+📂 behavior_subjectID_YYYY-MM-DD_HH-M-S
+├── 📂 behavior
+├── 📂 behavior-videos
+├── 📂 fib
+├── 📄 session.json
+├── 📄 subject.json
+├── 📄 data_description.json
+├── 📄 metadata.nd.json
+├── 📄 procedures.json
+├── 📄 processing.json
+└── 📄 rig.json
+```
+
 ### NWB Structure
 The NWB output of this capsule contains 2 relevant containers, the `acquisition` and `events`. The acquisition contains the raw timeseries data for each of the `Signal`, `Iso`, and `Stim` data for each of the fiber connection indices. Index 4 corresponds to the sensor floor. The strucutre is shown below
 
@@ -105,4 +121,5 @@ event_meanings_table = events.meanings_tables["meanings"][:]
 timeseries_streams = nwb.acquisition
 data = timeseries_streams["Iso_0"].data[:]
 timestamps = timeseries_streams["Iso_0"].timestamps[:]
+```
 
