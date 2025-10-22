@@ -1,6 +1,6 @@
 # aind-opto-fiber-benchmark-nwb-base-capsule
 
-This capsule takes in the raw data for the optogenetics fiber benchmark indicator experiment, structured here [acquisition-repo](https://github.com/AllenNeuralDynamics/FIP_DAQ_Control_IndicatorBenchmarking/blob/main/README.md) in the file formats section, and packages to a NWB file. 
+This [capsule](https://codeocean.allenneuraldynamics.org/capsule/4644449/tree) takes in the raw data for the optogenetics fiber benchmark indicator experiment, structured here [acquisition-repo](https://github.com/AllenNeuralDynamics/FIP_DAQ_Control_IndicatorBenchmarking/blob/main/README.md) in the file formats section, and packages to a NWB file. 
 
 In addition, at the top level, there will be a `session.json` file containing information about the optogenetic parameters used. An example is shown below
 
@@ -82,27 +82,27 @@ acquisition
 The events table contains the timestamps for each of the onset and offset laser stimulus delivered over the course of the experiment. Sample output is shown below
 
 ```
-| timestamp   | event               |
-|--------------|---------------------|
-| 6.425597e+07 | OptoStimLaser_onset |
+| timestamp    | event                |
+|--------------|--------------------- |
+| 6.425597e+07 | OptoStimLaser_onset  |
 | 6.425797e+07 | OptoStimLaser_offset |
-| 6.428597e+07 | OptoStimLaser_onset |
+| 6.428597e+07 | OptoStimLaser_onset  |
 | 6.428797e+07 | OptoStimLaser_offset |
-| 6.431598e+07 | OptoStimLaser_onset |
+| 6.431598e+07 | OptoStimLaser_onset  |
 | 6.431798e+07 | OptoStimLaser_offset |
-| 6.434598e+07 | OptoStimLaser_onset |
+| 6.434598e+07 | OptoStimLaser_onset  |
 | 6.434798e+07 | OptoStimLaser_offset |
-| 6.437598e+07 | OptoStimLaser_onset |
+| 6.437598e+07 | OptoStimLaser_onset  |
 | 6.437798e+07 | OptoStimLaser_offset |
-| 6.440599e+07 | OptoStimLaser_onset |
+| 6.440599e+07 | OptoStimLaser_onset  |
 | 6.440799e+07 | OptoStimLaser_offset |
-| 6.443598e+07 | OptoStimLaser_onset |
+| 6.443598e+07 | OptoStimLaser_onset  |
 | 6.443799e+07 | OptoStimLaser_offset |
-| 6.446599e+07 | OptoStimLaser_onset |
+| 6.446599e+07 | OptoStimLaser_onset  |
 | 6.446799e+07 | OptoStimLaser_offset |
-| 6.449600e+07 | OptoStimLaser_onset |
+| 6.449600e+07 | OptoStimLaser_onset  |
 | 6.449800e+07 | OptoStimLaser_offset |
-| 6.452600e+07 | OptoStimLaser_onset |
+| 6.452600e+07 | OptoStimLaser_onset  |
 | 6.452800e+07 | OptoStimLaser_offset |
 ```
 
