@@ -114,6 +114,9 @@ def create_event_and_meanings_dataframes(
     stim_metadata = session_metadata["stimulus_epochs"][0][
         "stimulus_parameters"
     ][0]
+    number_of_trials = session_metadata["stimulus_epochs"][0][
+        "trials_total"
+    ]
     pulse_frequencies = stim_metadata["pulse_frequency"]
     baseline_duration = float(stim_metadata["baseline_duration"])
     number_pulse_trains = float(stim_metadata["number_pulse_trains"][0])
@@ -132,7 +135,7 @@ def create_event_and_meanings_dataframes(
     )
     event_table_dict["event"].append("OptoStimLaser_onset")
 
-    for num_train in range(int(number_pulse_trains - 1)):
+    for num_train in range(int(number_of_trials - 1)):
         for pulse_frequency in pulse_frequencies:
             for pulse_duration in pulse_durations:
                 logger.info(
