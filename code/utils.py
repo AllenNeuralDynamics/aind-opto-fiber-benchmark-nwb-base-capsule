@@ -16,6 +16,10 @@ HED_TAGS = {
     "OptoStimLaser_onset": "Onset/Experimental-stimulus",
     "OptoStimLaser_offset": "Offset/Experimental-stimulus",
 }
+# number of fiber index columns (0, 1, 2, 3, 4)
+# index 4 corresponds to floor
+# for when no headers in csv
+NUM_FIBER_COLUMNS = 5
 
 
 def get_channel_data(
@@ -44,6 +48,18 @@ def get_channel_data(
             )
 
         df_data = pd.read_csv(data_file[0])
+        if "SoftwareTS" not in df_data.columns:
+            logger.info(
+                "No headers found. Defaulting to following "
+                "0 index is time, 1-4 are Fiber ROIs"
+            )
+            df_data = pd.read_csv(data_file[0], header=None)
+            # Assume first column is timestamps, the rest are ROIs
+            columns = ["SoftwareTS"] + [
+                f"ROI{i}" for i in range(0, NUM_FIBER_COLUMNS)
+            ]
+            df_data.columns = columns
+
         data_columns = df_data.filter(like="ROI").columns
         timestamps = df_data["SoftwareTS"].to_numpy()
         for column in data_columns:
@@ -114,12 +130,9 @@ def create_event_and_meanings_dataframes(
     stim_metadata = session_metadata["stimulus_epochs"][0][
         "stimulus_parameters"
     ][0]
-    number_of_trials = session_metadata["stimulus_epochs"][0][
-        "trials_total"
-    ]
+    number_of_trials = session_metadata["stimulus_epochs"][0]["trials_total"]
     pulse_frequencies = stim_metadata["pulse_frequency"]
     baseline_duration = float(stim_metadata["baseline_duration"])
-    number_pulse_trains = float(stim_metadata["number_pulse_trains"][0])
     pulse_durations = stim_metadata["pulse_train_duration"]
     pulse_interval = float(stim_metadata["pulse_train_interval"])
 
