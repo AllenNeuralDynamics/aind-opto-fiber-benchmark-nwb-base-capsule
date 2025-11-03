@@ -102,7 +102,7 @@ if __name__ == "__main__":
     logger.info("Gathering events and meanings table now")
 
     events_df, meanings_df = utils.create_event_and_meanings_dataframes(
-        settings.input_directory / "fib", session_json
+        primary_data_path / "fib", session_json
     )
 
     event_table = EventsTable.from_dataframe(
