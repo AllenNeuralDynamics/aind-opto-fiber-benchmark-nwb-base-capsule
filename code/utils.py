@@ -56,7 +56,7 @@ def get_channel_data(
             df_data = pd.read_csv(data_file[0], header=None)
             # Assume first column is timestamps, the rest are ROIs
             columns = ["SoftwareTS"] + [
-                f"ROI{i}" for i in range(1, NUM_FIBER_COLUMNS)
+                f"ROI{i}" for i in range(0, NUM_FIBER_COLUMNS)
             ]
             df_data.columns = columns
 
