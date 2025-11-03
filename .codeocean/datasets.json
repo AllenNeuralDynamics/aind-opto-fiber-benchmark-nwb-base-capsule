@@ -1,0 +1,9 @@
+{
+	"version": 1,
+	"attached_datasets": [
+		{
+			"id": "d57c1a63-781b-4e74-a4d4-1546e89e3468",
+			"mount": "raw_data"
+		}
+	]
+}
