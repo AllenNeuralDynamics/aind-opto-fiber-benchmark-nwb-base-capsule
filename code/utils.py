@@ -20,6 +20,7 @@ HED_TAGS = {
 # index 4 corresponds to floor
 # for when no headers in csv
 NUM_FIBER_COLUMNS = 5
+FIBER_SAMPLING_RATE = 20
 
 
 def get_channel_data(
@@ -141,7 +142,7 @@ def create_event_and_meanings_dataframes(
 
     # get starting slice into dataframe
     start_frame_onset = _get_frame_index(
-        0, float(pulse_frequencies[0]), float(baseline_duration)
+        0, FIBER_SAMPLING_RATE, float(baseline_duration)
     )
     event_table_dict["timestamp"].append(
         stim_df["SoftwareTS"].iloc[start_frame_onset]
@@ -158,7 +159,7 @@ def create_event_and_meanings_dataframes(
                 )
                 frame_offset = _get_frame_index(
                     start_frame_onset,
-                    float(pulse_frequency),
+                    FIBER_SAMPLING_RATE,
                     float(pulse_duration),
                 )
                 event_table_dict["timestamp"].append(
@@ -167,7 +168,7 @@ def create_event_and_meanings_dataframes(
                 event_table_dict["event"].append("OptoStimLaser_offset")
 
                 start_frame_onset = _get_frame_index(
-                    frame_offset, float(pulse_frequency), float(pulse_interval)
+                    frame_offset, FIBER_SAMPLING_RATE, float(pulse_interval)
                 )
                 event_table_dict["timestamp"].append(
                     stim_df["SoftwareTS"].iloc[start_frame_onset]
@@ -176,7 +177,7 @@ def create_event_and_meanings_dataframes(
 
     final_frame_offset = _get_frame_index(
         start_frame_onset,
-        float(pulse_frequencies[-1]),
+        FIBER_SAMPLING_RATE,
         float(pulse_duration[-1]),
     )
     event_table_dict["timestamp"].append(
