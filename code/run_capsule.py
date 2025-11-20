@@ -8,7 +8,7 @@ import logging
 from pathlib import Path
 
 import pynwb
-from aind_nwb_utils.utils import get_subject_nwb_object
+from aind_nwb_utils.utils import create_base_nwb_file
 from dateutil import parser
 from hdmf_zarr import NWBZarrIO
 from ndx_events import EventsTable, MeaningsTable, NdxEventsNWBFile
@@ -54,7 +54,6 @@ if __name__ == "__main__":
 
     session_json_path = primary_data_path / "session.json"
     data_description_json_path = primary_data_path / "data_description.json"
-    subject_json_path = primary_data_path / "subject.json"
     if not session_json_path.exists():
         raise FileNotFoundError("Primary data asset has no session json file")
     if not data_description_json_path.exists():
@@ -62,28 +61,19 @@ if __name__ == "__main__":
             "Primary data asset has no data description json"
         )
 
-    if not subject_json_path.exists():
-        raise FileNotFoundError("Primary data asset has no subject json")
 
     with open(session_json_path, "r") as f:
         session_json = json.load(f)
     with open(data_description_json_path, "r") as f:
         data_description_json = json.load(f)
-    with open(subject_json_path, "r") as f:
-        subject_json = json.load(f)
+
     logger.info(
         f"Found primary data {data_description_json['name']}. \
         Starting acquisition nwb packaging now"
     )
 
     # using this ndx object for events table
-    nwb_file = NdxEventsNWBFile(
-        session_id=data_description_json["name"],
-        session_description="Opto + Fiber Indicator Benchmarking",
-        session_start_time=parser.parse(session_json["session_start_time"]),
-        identifier=data_description_json["subject_id"],
-        subject=get_subject_nwb_object(data_description_json, subject_json),
-    )
+    nwb_file = create_base_nwb_file(primary_data_path)
 
     data = utils.get_channel_data(primary_data_path / "fib")
     logger.info(f"Found data to package {tuple(data.keys())}. Adding to NWB")
