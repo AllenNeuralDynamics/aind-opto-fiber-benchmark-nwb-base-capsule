@@ -144,19 +144,21 @@ def create_event_and_meanings_dataframes(
     start_frame_onset = _get_frame_index(
         0, FIBER_SAMPLING_RATE, float(baseline_duration)
     )
-    event_table_dict["timestamp"].append(
-        stim_df["SoftwareTS"].iloc[start_frame_onset]
-    )
-    event_table_dict["event"].append("OptoStimLaser_onset")
 
-    for num_train in range(int(number_of_trials - 1)):
+    for num_train in range(int(number_of_trials)):
         for pulse_frequency in pulse_frequencies:
             for pulse_duration in pulse_durations:
                 logger.info(
                     f"Processing frequency {pulse_frequency} "
                     f"and duration {pulse_duration} "
-                    f"for trial number {num_train + 1}"
+                    f"for trial number {num_train}"
                 )
+
+                event_table_dict["timestamp"].append(
+                    stim_df["SoftwareTS"].iloc[start_frame_onset]
+                )
+                event_table_dict["event"].append("OptoStimLaser_onset")
+
                 frame_offset = _get_frame_index(
                     start_frame_onset,
                     FIBER_SAMPLING_RATE,
@@ -170,20 +172,17 @@ def create_event_and_meanings_dataframes(
                 start_frame_onset = _get_frame_index(
                     frame_offset, FIBER_SAMPLING_RATE, float(pulse_interval)
                 )
-                event_table_dict["timestamp"].append(
-                    stim_df["SoftwareTS"].iloc[start_frame_onset]
-                )
-                event_table_dict["event"].append("OptoStimLaser_onset")
+                
 
-    final_frame_offset = _get_frame_index(
-        start_frame_onset,
-        FIBER_SAMPLING_RATE,
-        float(pulse_duration[-1]),
-    )
-    event_table_dict["timestamp"].append(
-        stim_df["SoftwareTS"].iloc[final_frame_offset]
-    )
-    event_table_dict["event"].append("OptoStimLaser_offset")
+    # final_frame_offset = _get_frame_index(
+    #     start_frame_onset,
+    #     FIBER_SAMPLING_RATE,
+    #     float(pulse_duration[-1]),
+    # )
+    # event_table_dict["timestamp"].append(
+    #     stim_df["SoftwareTS"].iloc[final_frame_offset]
+    # )
+    # event_table_dict["event"].append("OptoStimLaser_offset")
 
     event_table_df = pd.DataFrame(event_table_dict)
     for event in event_table_df["event"].unique():
