@@ -22,6 +22,11 @@ HED_TAGS = {
 NUM_FIBER_COLUMNS = 5
 FIBER_SAMPLING_RATE = 20
 
+VARYING_FREQUENCY_ITI_OFFSET = 3.1
+VARYING_FREQUENCY_OFFSETS = [30.5, 30.1, 30, 30]
+
+VARYING_DURATION_ITI_OFFSET = 3.9
+VARYING_DURATION_OFFSETS = [28.05, 28.1, 28.25, 28.5, 29]
 
 def get_channel_data(
     data_directory: Path,
@@ -101,6 +106,138 @@ def _get_frame_index(
 
     return int(frame_start + (float(frequency) * time_factor))
 
+def get_stim_indices_multi_frequency_mode(
+    num_trials: int, 
+    pulse_frequencies: list, 
+    pulse_duration: float, 
+    pulse_interval: float,
+    baseline_duration: float
+) -> np.ndarray:
+    """
+    Gets the stim indices for experiment mode with 
+    varying pulse frequencies
+    
+    Parameters
+    ----------
+    num_trials: int
+        Number of trials in experiment
+    pulse_frequencies: list
+       List of varying pulse frequencies
+    pulse_duration: float
+        Stim duration of laser
+    pulse_interval: float
+        The inter-trial-interval in seconds
+    baseline_duration: float
+        The period before stim laser 
+        occurs in seconds
+
+    Returns
+    -------
+    np.ndarray
+        The stim indices for mode with 
+        varying frequencies
+    """
+    stim_indices = []
+
+    for num_index in range(len(pulse_frequencies)):
+        # Compute the starting times of each trial for this frequency
+        stim_train = np.arange(num_trials) * (pulse_interval * len(pulse_frequencies) + VARYING_FREQUENCY_ITI_OFFSET) + baseline_duration
+
+        # Add frequency-specific offsets
+        if num_index > 0:
+            for offset_index in range(num_index):
+                stim_train = stim_train + VARYING_FREQUENCY_OFFSETS[offset_index]
+
+        # Convert time to sample indices
+        stim_train_indices = (stim_train * FIBER_SAMPLING_RATE).astype(int)
+
+        # Add pulse duration (in samples) for each trial
+        pulse_samples = int(pulse_duration * FIBER_SAMPLING_RATE)
+        for start_idx in stim_train_indices:
+            stim_indices.extend(range(start_idx, start_idx + pulse_samples))
+
+    return np.array(stim_indices)
+
+def get_stim_indices_multi_duration_mode(
+    num_trials: int, 
+    pulse_durations: list, 
+    pulse_interval: float,
+    baseline_duration: float
+) -> np.ndarray:
+    """
+    Gets the stim indices for experiment mode with 
+    varying pulse durations
+    
+    Parameters
+    ----------
+    num_trials: int
+        Number of trials in experiment
+    pulse_durations: list
+       List of varying pulse durations
+    pulse_interval: float
+        The inter-trial-interval in seconds
+    baseline_duration: float
+        The period before stim laser 
+        occurs in seconds
+
+    Returns
+    -------
+    np.ndarray
+        The stim indices for mode with 
+        varying durations
+    """
+    stim_indices = []
+
+    for num_index in range(len(pulse_durations)):
+        duration = float(pulse_durations[num_index])  # use the specific duration
+        # Compute the starting times of each trial
+        stim_train = np.arange(num_trials) * (pulse_interval * len(pulse_durations) + VARYING_DURATION_ITI_OFFSET) + baseline_duration
+
+        # Add duration-specific offsets
+        if num_index > 0:
+            for offset_index in range(num_index):
+                stim_train = stim_train + VARYING_DURATION_OFFSETS[offset_index]
+
+        # Convert time to sample indices
+        stim_train_indices = (stim_train * FIBER_SAMPLING_RATE).astype(int)
+
+        # Add pulse duration (in samples) for each trial
+        pulse_samples = int(duration * FIBER_SAMPLING_RATE)
+        for start_idx in stim_train_indices:
+            stim_indices.extend(range(start_idx, start_idx + pulse_samples))
+
+    return np.array(stim_indices)
+
+def get_pulse_onsets_offsets(stim_indices: np.ndarray):
+    """
+    Extract the onset and offset indices (or times) of
+    pulses from a list of sample indices.
+
+    Parameters
+    ----------
+    stim_indices : np.ndarray
+        1D array of all sample indices during
+        pulses (can be flattened across trials).
+
+    Returns
+    -------
+    onsets : np.ndarray
+        Array of pulse onset indices (or times if sampling_rate is given).
+    offsets : np.ndarray
+        Array of pulse offset indices (or times if sampling_rate is given).
+    """
+    stim_indices = np.sort(np.array(stim_indices))
+    diffs = np.diff(stim_indices)
+    
+    # Find boundaries where gap > 1 sample
+    pulse_boundaries = np.where(diffs > 1)[0]
+
+    # Onsets: first index of each pulse
+    onsets = stim_indices[np.insert(pulse_boundaries + 1, 0, 0)]
+    # Offsets: last index of each pulse
+    offsets = stim_indices[np.append(pulse_boundaries, len(stim_indices) - 1)]
+
+    return onsets, offsets
 
 def create_event_and_meanings_dataframes(
     data_directory: Path, session_metadata: dict
@@ -140,49 +277,63 @@ def create_event_and_meanings_dataframes(
     event_table_dict = {"timestamp": [], "event": []}
     meanings_table_dict = {"value": [], "meaning": [], "HED_tag": []}
 
-    # get starting slice into dataframe
-    start_frame_onset = _get_frame_index(
-        0, FIBER_SAMPLING_RATE, float(baseline_duration)
+    if len(pulse_frequencies) > 1 and len(pulse_durations) > 1:
+        raise ValueError(
+            "Mode with varying pulse frequencies and durations "
+            "not supported yet"
+        )
+
+    if len(pulse_frequencies) > 1:
+        logger.info(
+            f"Found mode with varying pulse frequences {pulse_frequencies}"
+        )
+        stim_time_indices = get_stim_indices_multi_frequency_mode(
+            num_trials=number_of_trials,
+            pulse_frequencies=pulse_frequencies,
+            pulse_duration=float(pulse_durations[0]),
+            pulse_interval=pulse_interval,
+            baseline_duration=baseline_duration
+        )
+    elif len(pulse_durations) > 1:
+        logger.info(
+            f"Found mode with varying pulse durations {pulse_durations}"
+        )
+        stim_time_indices = get_stim_indices_multi_duration_mode(
+            num_trials=number_of_trials,
+            pulse_durations=pulse_durations,
+            pulse_interval=pulse_interval,
+            baseline_duration=baseline_duration
+        )
+    else:
+        stim_times = np.arange(number_of_trials) * pulse_interval + baseline_duration
+        pulse_samples = int(float(pulse_durations[0]) * FIBER_SAMPLING_RATE)
+        stim_time_indices = []
+
+        # Convert stim_times to sample indices
+        stim_start_indices = (stim_times * FIBER_SAMPLING_RATE).astype(np.int64)
+
+        for start in stim_start_indices:
+            # Expand each trial to full pulse duration
+            pulse_indices = np.arange(start, start + pulse_samples)
+            stim_time_indices.extend(pulse_indices)
+
+        # Convert to NumPy array
+        stim_time_indices = np.array(stim_time_indices)
+
+    logger.info(
+        f"Found {len(stim_time_indices)} laser pulse indices for setup "
+        f"with pulse frequences {pulse_frequencies} and "
+        f"pulse durations {pulse_durations}"
     )
 
-    for num_train in range(int(number_of_trials)):
-        for pulse_frequency in pulse_frequencies:
-            for pulse_duration in pulse_durations:
-                logger.info(
-                    f"Processing frequency {pulse_frequency} "
-                    f"and duration {pulse_duration} "
-                    f"for trial number {num_train}"
-                )
-
-                event_table_dict["timestamp"].append(
-                    stim_df["SoftwareTS"].iloc[start_frame_onset]
-                )
-                event_table_dict["event"].append("OptoStimLaser_onset")
-
-                frame_offset = _get_frame_index(
-                    start_frame_onset,
-                    FIBER_SAMPLING_RATE,
-                    float(pulse_duration),
-                )
-                event_table_dict["timestamp"].append(
-                    stim_df["SoftwareTS"].iloc[frame_offset]
-                )
-                event_table_dict["event"].append("OptoStimLaser_offset")
-
-                start_frame_onset = _get_frame_index(
-                    frame_offset, FIBER_SAMPLING_RATE, float(pulse_interval)
-                )
-                
-
-    # final_frame_offset = _get_frame_index(
-    #     start_frame_onset,
-    #     FIBER_SAMPLING_RATE,
-    #     float(pulse_duration[-1]),
-    # )
-    # event_table_dict["timestamp"].append(
-    #     stim_df["SoftwareTS"].iloc[final_frame_offset]
-    # )
-    # event_table_dict["event"].append("OptoStimLaser_offset")
+    stim_onsets, stim_offsets = get_pulse_onsets_offsets(stim_time_indices)
+    # Pair each onset with its offset
+    for onset_idx, offset_idx in zip(stim_onsets, stim_offsets):
+        event_table_dict["timestamp"].append(stim_df["SoftwareTS"].iloc[onset_idx])
+        event_table_dict["event"].append("OptoStimLaser_onset")
+        
+        event_table_dict["timestamp"].append(stim_df["SoftwareTS"].iloc[offset_idx])
+        event_table_dict["event"].append("OptoStimLaser_offset")
 
     event_table_df = pd.DataFrame(event_table_dict)
     for event in event_table_df["event"].unique():
